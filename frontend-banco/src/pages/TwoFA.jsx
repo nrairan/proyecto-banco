@@ -3,43 +3,47 @@ import { useNavigate } from "react-router-dom";
 
 export default function TwoFA() {
   const navigate = useNavigate();
-  const [codigo, setCodigo] = useState("");
+
+  const [codigo, setCodigo] = useState(""); // Código generado
+  const [codigoIngresado, setCodigoIngresado] = useState(""); // Código escrito por el usuario
   const [error, setError] = useState("");
 
-  // Usuario que está intentando iniciar sesión
-  const usuario = localStorage.getItem("usuario-login");
+  // DATOS DEL BOT DE TELEGRAM
+  const TELEGRAM_TOKEN = "8334850094:AAEXJj9pXkSY6GkkwbWB9t4y88E0cBDqL38";
+  const CHAT_ID = "8038075060";
 
-  const enviarCodigo = async (e) => {
+  // Generar número de 6 dígitos
+  function generarCodigo() {
+    return Math.floor(100000 + Math.random() * 900000).toString();
+  }
+
+  // Enviar el código a Telegram
+  const enviarCodigoTelegram = async () => {
+    const nuevoCodigo = generarCodigo();
+    setCodigo(nuevoCodigo);
+
+    const mensaje = `Tu código de verificación es: ${nuevoCodigo}`;
+
+    await fetch(`https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        chat_id: CHAT_ID,
+        text: mensaje
+      })
+    });
+
+    alert("Código enviado a tu Telegram");
+  };
+
+  // Validar el código ingresado
+  const verificarCodigo = (e) => {
     e.preventDefault();
 
-    try {
-      const resp = await fetch("http://localhost:3000/api/login/2fa", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          usuario: usuario,
-          codigo: codigo,
-        }),
-      });
-
-      const data = await resp.json();
-
-      if (!data.ok) {
-        setError("Código incorrecto o expirado.");
-        return;
-      }
-
-      // Guardar token
-      localStorage.setItem("token", data.token);
-
-      // Redirigir al dashboard
+    if (codigo === codigoIngresado) {
       navigate("/dashboard");
-
-    } catch (err) {
-      console.error(err);
-      setError("Error de conexión con el servidor.");
+    } else {
+      setError("Código incorrecto");
     }
   };
 
@@ -59,16 +63,33 @@ export default function TwoFA() {
         width: "350px",
         textAlign: "center"
       }}>
-        
-        <h2>Verificación 2FA</h2>
-        <p>Ingresa el código enviado a tu Telegram</p>
 
-        <form onSubmit={enviarCodigo}>
+        <h2>Verificación 2FA</h2>
+        <p>Haz clic para recibir un código por Telegram</p>
+
+        {/* BOTÓN PARA ENVIAR EL CÓDIGO */}
+        <button
+          onClick={enviarCodigoTelegram}
+          style={{
+            width: "100%",
+            padding: "10px",
+            marginBottom: "20px",
+            backgroundColor: "#28a745",
+            color: "white",
+            border: "none",
+            borderRadius: "5px",
+            cursor: "pointer"
+          }}
+        >
+          Enviar código a Telegram
+        </button>
+
+        <form onSubmit={verificarCodigo}>
           <input 
             type="text"
-            placeholder="Código de 6 dígitos"
-            value={codigo}
-            onChange={(e) => setCodigo(e.target.value)}
+            placeholder="Código recibido"
+            value={codigoIngresado}
+            onChange={(e) => setCodigoIngresado(e.target.value)}
             required
             style={{
               width: "100%",
@@ -97,7 +118,7 @@ export default function TwoFA() {
               cursor: "pointer"
             }}
           >
-            Verificar
+            Verificar código
           </button>
         </form>
 

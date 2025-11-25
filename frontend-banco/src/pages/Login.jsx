@@ -29,7 +29,7 @@ export default function Login() {
           localStorage.setItem("correo_temp", correo);
 
           // Ir a pantalla de código
-          nav("/2fa");
+          nav("/TwoFA");
         } else {
           setError(res.msg || "Error al iniciar sesión");
         }
