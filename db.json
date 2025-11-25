@@ -1,5 +1,18 @@
 {
-  "clientes": [],
+  "clientes": [
+    {
+      "id": 1764030354184,
+      "nombre": "hola",
+      "correo": "hola@gmail.com",
+      "password": "$2b$10$zDwAMPyihXkUsI2jxPjPtuGp0UBIthZ07e2yDYyeNWW.MrF292ZYC"
+    }
+  ],
   "productos": [],
-  "codigos2FA": []
+  "codigos2FA": [
+    {
+      "id_cliente": 1764030354184,
+      "codigo": 282482,
+      "expira": 1764031086060
+    }
+  ]
 }
