@@ -1,12 +1,20 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { API } from "../api";
 
 export default function CrearProducto() {
   const [nombre, setNombre] = useState("");
-  const navigate = useNavigate();
+  const [msg, setMsg] = useState("");
 
+  const navigate = useNavigate();
   const id_cliente = Number(localStorage.getItem("id_cliente"));
+
+  // Verificar login
+  useEffect(() => {
+    if (!id_cliente) {
+      navigate("/login");
+    }
+  }, [id_cliente, navigate]);
 
   async function crear(e) {
     e.preventDefault();
@@ -18,8 +26,12 @@ export default function CrearProducto() {
     });
 
     const data = await resp.json();
+
     if (resp.ok) {
-      navigate("/dashboard");
+      setMsg("Producto creado correctamente.");
+      setTimeout(() => navigate("/dashboard"), 1000);
+    } else {
+      setMsg(data.msg || "Error al crear el producto.");
     }
   }
 
@@ -37,6 +49,8 @@ export default function CrearProducto() {
 
         <button type="submit">Crear</button>
       </form>
+
+      {msg && <p>{msg}</p>}
     </div>
   );
 }

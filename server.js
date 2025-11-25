@@ -3,11 +3,10 @@ import cors from "cors";
 import fs from "fs";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-import nodemailer from "nodemailer";
 
-// ======================
-//  Utilidades de BD JSON
-// ======================
+// ==================================
+//  BD utilidades
+// ==================================
 function leerDB() {
   return JSON.parse(fs.readFileSync("db.json", "utf8"));
 }
@@ -16,29 +15,29 @@ function guardarDB(data) {
   fs.writeFileSync("db.json", JSON.stringify(data, null, 2));
 }
 
-// ======================
+// ==================================
 //  Servidor
-// ======================
+// ==================================
 const app = express();
 app.use(cors());
 app.use(express.json());
 
 const SECRET = "secreto123"; // JWT simple para este proyecto
 
-// ======================
-//  Configurar correo (2FA)
-// ======================
-const transporter = nodemailer.createTransport({
-  service: "gmail",
-  auth: {
-    user: "tu_correo@gmail.com",
-    pass: "tu_contraseña"
-  }
-});
+// ==================================
+//  SIMULADOR DE ENVÍO DE CORREO
+// ==================================
+function enviarCodigoSimulado(correo, codigo) {
+  console.log("=======================================");
+  console.log(" SIMULANDO ENVÍO DE CORREO 2FA ");
+  console.log(" Para:", correo);
+  console.log(" Código generado:", codigo);
+  console.log("=======================================");
+}
 
-// ======================
+// ==================================
 //  ENDPOINTS
-// ======================
+// ==================================
 
 // Crear cliente
 app.post("/clientes", async (req, res) => {
@@ -63,7 +62,7 @@ app.post("/clientes", async (req, res) => {
   res.json({ msg: "Cliente creado", cliente: nuevo });
 });
 
-// Login (envía código 2FA)
+// Login (genera código 2FA)
 app.post("/login", async (req, res) => {
   const db = leerDB();
   const { correo, password } = req.body;
@@ -77,6 +76,7 @@ app.post("/login", async (req, res) => {
   // Generar código 2FA
   const codigo = Math.floor(100000 + Math.random() * 900000);
 
+  // Registrar código en DB
   db.codigos2FA = db.codigos2FA.filter(c => c.id_cliente !== cliente.id);
   db.codigos2FA.push({
     id_cliente: cliente.id,
@@ -85,15 +85,10 @@ app.post("/login", async (req, res) => {
   });
   guardarDB(db);
 
-  // Enviar correo
-  transporter.sendMail({
-    from: "Banco XYZ",
-    to: cliente.correo,
-    subject: "Tu código 2FA",
-    text: "Tu código es: " + codigo
-  });
+  // Simular correo
+  enviarCodigoSimulado(cliente.correo, codigo);
 
-  res.json({ msg: "Código enviado al correo" });
+  res.json({ msg: "Código generado" });
 });
 
 // Validar 2FA
@@ -118,7 +113,7 @@ app.post("/login/2fa", (req, res) => {
   res.json({ msg: "Login exitoso", token });
 });
 
-// Crear producto para un cliente
+// Crear producto
 app.post("/productos", (req, res) => {
   const db = leerDB();
   const { id_cliente, nombre } = req.body;
@@ -163,41 +158,6 @@ app.post("/productos/:id/retirar", (req, res) => {
   res.json({ msg: "Retiro realizado", saldo: producto.saldo });
 });
 
-app.post("/transacciones/consignar", async (req, res) => {
-    const { id_producto, valor } = req.body;
-
-    if (!id_producto || !valor || valor <= 0) {
-        return res.status(400).json({ msg: "Datos inválidos" });
-    }
-
-    try {
-        // 1. Verificar si existe el producto
-        const prod = await db.get("SELECT * FROM productos WHERE id = ?", [id_producto]);
-
-        if (!prod) {
-            return res.status(404).json({ msg: "Producto no encontrado" });
-        }
-
-        // 2. Sumar al saldo
-        await db.run(
-            "UPDATE productos SET saldo = saldo + ? WHERE id = ?",
-            [valor, id_producto]
-        );
-
-        // 3. Registrar la transacción (opcional)
-        await db.run(
-            "INSERT INTO transacciones (id_producto, tipo, valor, fecha) VALUES (?, ?, ?, datetime('now'))",
-            [id_producto, "CONSIGNACION", valor]
-        );
-
-        res.json({ ok: true, msg: "Consignación realizada" });
-
-    } catch (err) {
-        res.status(500).json({ msg: "Error interno", error: err.toString() });
-    }
-});
-
-
 // Consultar saldo
 app.get("/productos/:id", (req, res) => {
   const db = leerDB();
@@ -205,5 +165,5 @@ app.get("/productos/:id", (req, res) => {
   res.json(producto);
 });
 
-// ======================
+// ==================================
 app.listen(3000, () => console.log("API Banco JSON lista en puerto 3000"));

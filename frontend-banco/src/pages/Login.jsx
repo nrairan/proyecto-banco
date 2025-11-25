@@ -19,20 +19,19 @@ export default function Login() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ correo, password })
     })
-      .then(r => r.json())
-      .then(res => {
-        if (res.msg === "Código enviado al Telegram" || 
-            res.msg === "Código enviado al correo" || 
-            res.ok === true) {
+      .then(async r => {
+        const res = await r.json();
 
-          // Guardar correo temporal para validación 2FA
-          localStorage.setItem("correo_temp", correo);
-
-          // Ir a pantalla de código
-          nav("/TwoFA");
-        } else {
-          setError(res.msg || "Error al iniciar sesión");
+        if (!r.ok) {
+          setError(res.msg);
+          return;
         }
+
+        // GUARDAR correo para validar 2FA
+        localStorage.setItem("correo_temp", correo);
+
+        // IR a TwoFA
+        nav("/TwoFA");
       })
       .catch(() => setError("Error de conexión con el servidor"));
   }
