@@ -4,20 +4,17 @@ import { useNavigate } from "react-router-dom";
 export default function TwoFA() {
   const navigate = useNavigate();
 
-  const [codigo, setCodigo] = useState(""); // Código generado
-  const [codigoIngresado, setCodigoIngresado] = useState(""); // Código escrito por el usuario
+  const [codigo, setCodigo] = useState("");
+  const [codigoIngresado, setCodigoIngresado] = useState("");
   const [error, setError] = useState("");
 
-  // DATOS DEL BOT DE TELEGRAM
   const TELEGRAM_TOKEN = "8334850094:AAEXJj9pXkSY6GkkwbWB9t4y88E0cBDqL38";
   const CHAT_ID = "8038075060";
 
-  // Generar número de 6 dígitos
   function generarCodigo() {
     return Math.floor(100000 + Math.random() * 900000).toString();
   }
 
-  // Enviar el código a Telegram
   const enviarCodigoTelegram = async () => {
     const nuevoCodigo = generarCodigo();
     setCodigo(nuevoCodigo);
@@ -27,20 +24,18 @@ export default function TwoFA() {
     await fetch(`https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        chat_id: CHAT_ID,
-        text: mensaje
-      })
+      body: JSON.stringify({ chat_id: CHAT_ID, text: mensaje })
     });
 
     alert("Código enviado a tu Telegram");
   };
 
-  // Validar el código ingresado
   const verificarCodigo = (e) => {
     e.preventDefault();
 
     if (codigo === codigoIngresado) {
+      localStorage.setItem("token", "ok"); // mínimo para permitir el dashboard
+
       navigate("/dashboard");
     } else {
       setError("Código incorrecto");
@@ -65,9 +60,8 @@ export default function TwoFA() {
       }}>
 
         <h2>Verificación 2FA</h2>
-        <p>Haz clic para recibir un código por Telegram</p>
+        <p>Clic para recibir un código por Telegram</p>
 
-        {/* BOTÓN PARA ENVIAR EL CÓDIGO */}
         <button
           onClick={enviarCodigoTelegram}
           style={{

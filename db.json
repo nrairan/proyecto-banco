@@ -5,14 +5,49 @@
       "nombre": "hola",
       "correo": "hola@gmail.com",
       "password": "$2b$10$zDwAMPyihXkUsI2jxPjPtuGp0UBIthZ07e2yDYyeNWW.MrF292ZYC"
+    },
+    {
+      "id": 1764040346555,
+      "nombre": "pedro",
+      "correo": "pedro@gmail.com",
+      "password": "$2b$10$KFbkmmRRaIV8fQJnu/FyhOLmF.pz2ivbZWa060l9krHMMxO1F4q12"
+    },
+    {
+      "id": 1764040624132,
+      "nombre": "nombre",
+      "correo": "nombre@gmail.com",
+      "password": "$2b$10$J6zecrpq.urOeRJnQ2JP6uyv/oSJBeMKp7BvdRKQMftmzKoz8WwYa"
     }
   ],
-  "productos": [],
+  "productos": [
+    {
+      "id": 1764035561921,
+      "id_cliente": 0,
+      "nombre": "producto",
+      "saldo": 0
+    },
+    {
+      "id": 1764036947652,
+      "id_cliente": 0,
+      "nombre": "prueba",
+      "saldo": 0
+    }
+  ],
   "codigos2FA": [
     {
       "id_cliente": 1764030354184,
-      "codigo": 508724,
-      "expira": 1764035350762
+      "codigo": 657582,
+      "expira": 1764037349819
+    },
+    {
+      "id_cliente": 1764040346555,
+      "codigo": 359720,
+      "expira": 1764040703166
+    },
+    {
+      "id_cliente": 1764040624132,
+      "codigo": 305984,
+      "expira": 1764041070957
     }
   ]
 }

@@ -5,32 +5,36 @@ import { API } from "../api";
 
 export default function Dashboard() {
   const [productos, setProductos] = useState([]);
-  const correo = localStorage.getItem("correo");
+  const id_cliente = Number(localStorage.getItem("id_cliente"));
 
   useEffect(() => {
-    fetch(API + "/clientes")
+    if (!id_cliente) return;
+
+    fetch(API + "/productos")
       .then(r => r.json())
-      .then(db => {
-        const cliente = db.clientes.find(c => c.correo === correo);
-        if (cliente) {
-          fetch(API + "/productos")
-            .then(r => r.json())
-            .then(() => setProductos(db.productos.filter(p => p.id_cliente === cliente.id)));
-        }
+      .then(prod => {
+        const lista = prod.filter(p => p.id_cliente === id_cliente);
+        setProductos(lista);
       });
-  }, []);
+  }, [id_cliente]);
 
   return (
     <div>
       <Navbar />
+
       <div style={{ padding: 20 }}>
         <h2>Mis productos</h2>
 
-        <Link to="/crear-producto">Crear producto</Link><br/><br/>
+        <Link to="/crear-producto">Crear producto</Link>
+        <br /><br />
+
+        {/* 👇 BOTÓN QUE FALTABA */}
+        <Link to="/crear-cliente">Crear cliente</Link>
+        <br /><br />
 
         {productos.map(p => (
           <div key={p.id} style={{ border: "1px solid #ccc", padding: 10, marginBottom: 10 }}>
-            <strong>{p.nombre}</strong>  
+            <strong>{p.nombre}</strong>
             <br />
             <Link to={`/producto/${p.id}`}>Ver / Operaciones</Link>
           </div>

@@ -163,6 +163,41 @@ app.post("/productos/:id/retirar", (req, res) => {
   res.json({ msg: "Retiro realizado", saldo: producto.saldo });
 });
 
+app.post("/transacciones/consignar", async (req, res) => {
+    const { id_producto, valor } = req.body;
+
+    if (!id_producto || !valor || valor <= 0) {
+        return res.status(400).json({ msg: "Datos inválidos" });
+    }
+
+    try {
+        // 1. Verificar si existe el producto
+        const prod = await db.get("SELECT * FROM productos WHERE id = ?", [id_producto]);
+
+        if (!prod) {
+            return res.status(404).json({ msg: "Producto no encontrado" });
+        }
+
+        // 2. Sumar al saldo
+        await db.run(
+            "UPDATE productos SET saldo = saldo + ? WHERE id = ?",
+            [valor, id_producto]
+        );
+
+        // 3. Registrar la transacción (opcional)
+        await db.run(
+            "INSERT INTO transacciones (id_producto, tipo, valor, fecha) VALUES (?, ?, ?, datetime('now'))",
+            [id_producto, "CONSIGNACION", valor]
+        );
+
+        res.json({ ok: true, msg: "Consignación realizada" });
+
+    } catch (err) {
+        res.status(500).json({ msg: "Error interno", error: err.toString() });
+    }
+});
+
+
 // Consultar saldo
 app.get("/productos/:id", (req, res) => {
   const db = leerDB();
